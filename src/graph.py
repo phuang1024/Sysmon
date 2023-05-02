@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 import pygame
 
+from utils import random_color
+
 
 class Graph:
     """
@@ -28,10 +30,10 @@ class Graph:
 
         if self.average:
             data = np.mean(self.data, axis=0)
-            self.draw_line(image, data, (255, 255, 255))
+            self.draw_line(image, data, random_color(0))
         else:
-            for line in self.data:
-                self.draw_line(image, line, (255, 255, 255))
+            for i, line in enumerate(self.data):
+                self.draw_line(image, line, random_color(i))
 
         # Convert to pygame surface
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -55,7 +57,7 @@ class Graph:
 
             # Draw connecting line.
             if prev is not None:
-                cv2.line(image, prev, point, color, 1, cv2.LINE_AA)
+                cv2.line(image, prev, point, color * 0.6, 1, cv2.LINE_AA)
             prev = point
 
             # Draw point.

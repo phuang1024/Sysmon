@@ -44,16 +44,27 @@ def main(args):
     while True:
         time.sleep(1 / 60)
         pygame.display.update()
+
+        need_redraw = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 return
             elif event.type == pygame.VIDEORESIZE:
-                redraw(surface, graphs, args)
+                need_redraw = True
+
+            elif event.type == pygame.KEYDOWN:
+                need_redraw = True
+                if event.key == pygame.K_a:
+                    for graph in graphs:
+                        graph.average = not graph.average
 
         if time.time() - last_refresh > args.rate:
             last_refresh = time.time()
             refresh(graphs)
+            need_redraw = True
+
+        if need_redraw:
             redraw(surface, graphs, args)
 
 
@@ -66,7 +77,7 @@ if __name__ == "__main__":
     parser.add_argument("--no-memory", dest="memory", action="store_false")
     parser.set_defaults(cpu=True, memory=True)
 
-    parser.add_argument("-r", "--rate", type=float, default=1, help="Refresh rate.")
+    parser.add_argument("-r", "--rate", type=float, default=0.4, help="Refresh rate.")
     parser.add_argument("-t", "--time", type=float, default=60, help="Graph X axis length.")
     parser.add_argument("--margin", type=float, default=0.2, help="Spacing between graphs as factor of graph height.")
 
