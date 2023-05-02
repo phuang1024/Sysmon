@@ -3,7 +3,7 @@ from random import Random
 
 import numpy as np
 
-random = Random(123)
+random = Random(71)
 colors = []
 for i in range(100):
     h = random.uniform(0, 1)

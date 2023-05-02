@@ -5,6 +5,7 @@ from graph import Graph
 
 
 class Cpu(Graph):
+    name = "CPU"
     n_lines = psutil.cpu_count()
 
     def refresh(self):

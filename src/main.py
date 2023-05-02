@@ -7,6 +7,7 @@ import pygame
 pygame.init()
 
 from cpu import Cpu
+from memory import Memory
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_FONT = os.path.join(ROOT, "assets", "ubuntu-condensed.ttf")
@@ -55,6 +56,8 @@ def main(args):
     graphs = []
     if args.cpu:
         graphs.append(Cpu(length))
+    if args.memory:
+        graphs.append(Memory(length))
 
     surface = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
     pygame.display.set_caption("System Monitor")
@@ -99,11 +102,12 @@ if __name__ == "__main__":
     parser.add_argument("-r", "--rate", type=float, default=0.4, help="Refresh rate.")
     parser.add_argument("-t", "--time", type=float, default=60, help="Graph X axis length.")
     parser.add_argument("--font", type=str, default=DEFAULT_FONT, help="Font to use for labels.")
+    parser.add_argument("--font-size", type=int, default=18, help="Font size to use for labels.")
     parser.add_argument("--margin", type=float, default=0.2, help="Spacing between graphs as factor of graph height.")
     parser.add_argument("--labels", type=float, default=0.3, help="Space for labels as factor of graph width.")
 
     args = parser.parse_args()
 
-    FONT = pygame.font.Font(args.font, 16)
+    FONT = pygame.font.Font(args.font, args.font_size)
 
     main(args)

@@ -10,7 +10,9 @@ class Graph:
     Extend from this.
     """
 
+    name = "Graph"
     n_lines = 0
+    supports_avg = True
 
     def __init__(self, length):
         # Set this from outside.
@@ -32,13 +34,14 @@ class Graph:
     def draw_graph(self, width, height, args):
         image = np.zeros((height, width, 3), dtype=np.uint8)
 
+        do_avg = self.average and self.supports_avg
         for i, line in enumerate(self.data):
             color = random_color(i)
             # Dim individual if average is set.
-            if self.average:
-                color = color * 0.2
+            if do_avg:
+                color = color * 0.25
             self.draw_line(image, line, color)
-        if self.average:
+        if do_avg:
             data = np.mean(self.data, axis=0)
             self.draw_line(image, data, random_color(0))
 
@@ -73,8 +76,9 @@ class Graph:
     def draw_labels(self, width, height, args, font):
         image = pygame.Surface((width, height))
 
-        for i, label in enumerate(self.labels):
-            y = 18 * i
+        labels = [self.name, "", *self.labels]
+        for i, label in enumerate(labels):
+            y = (args.font_size+3) * i
             text = font.render(label, True, (255, 255, 255))
             image.blit(text, (0, y))
 
