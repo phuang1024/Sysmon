@@ -12,8 +12,7 @@ class Cpu(Graph):
         data = data / 100
 
         labels = (
-            "testing",
-            "testing2",
+            f"Cores: {len(data)}",
         )
 
         return data, labels
