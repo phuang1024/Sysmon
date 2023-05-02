@@ -6,7 +6,10 @@ from graph import Graph
 
 class Temperature(Graph):
     name = "Temperature"
-    n_lines = len([e for e in psutil.sensors_temperatures()["coretemp"] if e.label.startswith("Core")])
+    try:
+        n_lines = len([e for e in psutil.sensors_temperatures()["coretemp"] if e.label.startswith("Core")])
+    except KeyError:
+        n_lines = 0
     supports_avg = True
 
     def refresh(self):
