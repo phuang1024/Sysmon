@@ -33,6 +33,12 @@ class Graph:
             for line in self.data:
                 self.draw_line(image, line, (255, 255, 255))
 
+        # Convert to pygame surface
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = pygame.image.frombuffer(image.tobytes(), image.shape[1::-1], "RGB")
+
+        return image
+
     def draw_line(self, image, data, color):
         if len(data) <= 1:
             dx = 0
@@ -44,12 +50,13 @@ class Graph:
         for i, value in enumerate(data):
             point = (
                 int(i*dx),
-                np.interp(value, (0, 1), (image.shape[0]-1, 0))
+                int(np.interp(value, (0, 1), (image.shape[0]-1, 0))),
             )
 
             # Draw connecting line.
             if prev is not None:
                 cv2.line(image, prev, point, color, 1, cv2.LINE_AA)
+            prev = point
 
             # Draw point.
             cv2.circle(image, point, 2, color, -1, cv2.LINE_AA)
