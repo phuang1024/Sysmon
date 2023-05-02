@@ -13,6 +13,9 @@ class Cpu(Graph):
 
         labels = (
             f"Cores: {len(data)}",
+            f"N > 50%: {np.sum(data > 0.5)}",
+            f"Average: {int(100*np.average(data))}%",
+            f"Max: {int(100*np.max(data))}%",
         )
 
         return data, labels

@@ -32,12 +32,15 @@ class Graph:
     def draw_graph(self, width, height, args):
         image = np.zeros((height, width, 3), dtype=np.uint8)
 
+        for i, line in enumerate(self.data):
+            color = random_color(i)
+            # Dim individual if average is set.
+            if self.average:
+                color = color * 0.2
+            self.draw_line(image, line, color)
         if self.average:
             data = np.mean(self.data, axis=0)
             self.draw_line(image, data, random_color(0))
-        else:
-            for i, line in enumerate(self.data):
-                self.draw_line(image, line, random_color(i))
 
         # Convert to pygame surface
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -65,7 +68,7 @@ class Graph:
             prev = point
 
             # Draw point.
-            cv2.circle(image, point, 2, color, -1, cv2.LINE_AA)
+            cv2.circle(image, point, 1, color, -1, cv2.LINE_AA)
 
     def draw_labels(self, width, height, args, font):
         image = pygame.Surface((width, height))

@@ -61,7 +61,7 @@ def main(args):
 
     last_refresh = 0
     while True:
-        time.sleep(1 / 60)
+        time.sleep(1 / 30)
         pygame.display.update()
 
         need_redraw = False
