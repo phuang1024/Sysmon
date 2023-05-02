@@ -22,10 +22,14 @@ class Graph:
         """
         Call refresh and roll over data.
         """
-        self.data = np.roll(self.data, -1, axis=1)
-        self.data[:, -1] = self.refresh()
+        data, labels = self.refresh()
 
-    def draw(self, width, height, args):
+        self.data = np.roll(self.data, -1, axis=1)
+        self.data[:, -1] = data
+
+        self.labels = labels
+
+    def draw_graph(self, width, height, args):
         image = np.zeros((height, width, 3), dtype=np.uint8)
 
         if self.average:
@@ -63,9 +67,21 @@ class Graph:
             # Draw point.
             cv2.circle(image, point, 2, color, -1, cv2.LINE_AA)
 
-    def refresh(self) -> list[float]:
+    def draw_labels(self, width, height, args, font):
+        image = pygame.Surface((width, height))
+
+        for i, label in enumerate(self.labels):
+            y = 18 * i
+            text = font.render(label, True, (255, 255, 255))
+            image.blit(text, (0, y))
+
+        return image
+
+    def refresh(self) -> tuple[list[float], list[str]]:
         """
         Implement this in the subclass. Return a sequence of values for each graph.
         Min-max should be 0-1
+
+        :return: (values, labels)
         """
-        return []
+        return ([], [])

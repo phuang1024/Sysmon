@@ -8,6 +8,11 @@ pygame.init()
 
 from cpu import Cpu
 
+ROOT = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_FONT = os.path.join(ROOT, "assets", "ubuntu-condensed.ttf")
+# Set in `if __name__ == "__main__"`
+FONT = None
+
 
 def refresh(graphs):
     for graph in graphs:
@@ -17,15 +22,29 @@ def refresh(graphs):
 def redraw(surface, graphs, args):
     surface.fill((0, 0, 0))
 
+    # Compute height
     total_graph_factors = len(graphs) + (len(graphs)+1) * args.margin
     graph_height = surface.get_height() / total_graph_factors
     margin = graph_height * args.margin
-    graph_width = surface.get_width() - 2*margin
+
+    # Compute width
+    total_width = surface.get_width() - 2*margin
+    avail_width = total_width - margin
+    graph_width = avail_width / (1 + args.labels)
+    label_width = graph_width * args.labels
+    label_x = 2*margin + graph_width
 
     y = margin
     for graph in graphs:
-        img = graph.draw(int(graph_width), int(graph_height), args)
+        # Graph
+        img = graph.draw_graph(int(graph_width), int(graph_height), args)
         surface.blit(img, (margin, y))
+        pygame.draw.rect(surface, (255, 255, 255), (margin, y, graph_width, graph_height), 1)
+
+        # Labels
+        labels = graph.draw_labels(int(label_width), int(graph_height), args, FONT)
+        surface.blit(labels, (label_x, y))
+
         y += graph_height + margin
 
 
@@ -79,8 +98,12 @@ if __name__ == "__main__":
 
     parser.add_argument("-r", "--rate", type=float, default=0.4, help="Refresh rate.")
     parser.add_argument("-t", "--time", type=float, default=60, help="Graph X axis length.")
+    parser.add_argument("--font", type=str, default=DEFAULT_FONT, help="Font to use for labels.")
     parser.add_argument("--margin", type=float, default=0.2, help="Spacing between graphs as factor of graph height.")
+    parser.add_argument("--labels", type=float, default=0.3, help="Space for labels as factor of graph width.")
 
     args = parser.parse_args()
+
+    FONT = pygame.font.Font(args.font, 16)
 
     main(args)

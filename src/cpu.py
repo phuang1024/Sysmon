@@ -10,4 +10,10 @@ class Cpu(Graph):
     def refresh(self):
         data = np.array(psutil.cpu_percent(percpu=True))
         data = data / 100
-        return data
+
+        labels = (
+            "testing",
+            "testing2",
+        )
+
+        return data, labels
