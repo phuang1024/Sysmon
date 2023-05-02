@@ -39,7 +39,7 @@ class Graph:
             color = random_color(i)
             # Dim individual if average is set.
             if do_avg:
-                color = color * 0.25
+                color = color * 0.3
             self.draw_line(image, line, color)
         if do_avg:
             data = np.mean(self.data, axis=0)
@@ -78,7 +78,7 @@ class Graph:
 
         labels = [self.name, "", *self.labels]
         for i, label in enumerate(labels):
-            y = (args.font_size+3) * i
+            y = (args.font_size+2) * i
             text = font.render(label, True, (255, 255, 255))
             image.blit(text, (0, y))
 

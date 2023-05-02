@@ -7,7 +7,9 @@ import pygame
 pygame.init()
 
 from cpu import Cpu
+from gpu import Gpu
 from memory import Memory
+from temp import Temperature
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_FONT = os.path.join(ROOT, "assets", "ubuntu-condensed.ttf")
@@ -58,6 +60,10 @@ def main(args):
         graphs.append(Cpu(length))
     if args.memory:
         graphs.append(Memory(length))
+    if args.temp:
+        graphs.append(Temperature(length))
+    if args.gpu:
+        graphs.append(Gpu(length))
 
     surface = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
     pygame.display.set_caption("System Monitor")
@@ -97,14 +103,18 @@ if __name__ == "__main__":
     parser.add_argument("--no-cpu", dest="cpu", action="store_false")
     parser.add_argument("--memory", action="store_true")
     parser.add_argument("--no-memory", dest="memory", action="store_false")
-    parser.set_defaults(cpu=True, memory=True)
+    parser.add_argument("--temp", action="store_true")
+    parser.add_argument("--no-temp", dest="temp", action="store_false")
+    parser.add_argument("--gpu", action="store_true")
+    parser.add_argument("--no-gpu", dest="gpu", action="store_false")
+    parser.set_defaults(cpu=True, memory=True, temp=True, gpu=False)
 
     parser.add_argument("-r", "--rate", type=float, default=0.4, help="Refresh rate.")
     parser.add_argument("-t", "--time", type=float, default=60, help="Graph X axis length.")
     parser.add_argument("--font", type=str, default=DEFAULT_FONT, help="Font to use for labels.")
-    parser.add_argument("--font-size", type=int, default=18, help="Font size to use for labels.")
+    parser.add_argument("--font-size", type=int, default=17, help="Font size to use for labels.")
     parser.add_argument("--margin", type=float, default=0.2, help="Spacing between graphs as factor of graph height.")
-    parser.add_argument("--labels", type=float, default=0.3, help="Space for labels as factor of graph width.")
+    parser.add_argument("--labels", type=float, default=0.2, help="Space for labels as factor of graph width.")
 
     args = parser.parse_args()
 
