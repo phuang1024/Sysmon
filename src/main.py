@@ -57,32 +57,27 @@ def main(args):
     # Create graph objects.
     graphs = []
     if args.cpu:
-        graphs.append(Cpu(length))
+        graphs.append(Cpu(length, args.rate))
     if args.memory:
-        graphs.append(Memory(length))
+        graphs.append(Memory(length, args.rate))
     if args.temp:
-        graphs.append(Temperature(length))
+        graphs.append(Temperature(length, args.rate))
     if args.gpu:
-        graphs.append(Gpu(length))
+        graphs.append(Gpu(length, args.rate))
 
     surface = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
     pygame.display.set_caption("System Monitor")
 
     last_refresh = 0
     while True:
-        time.sleep(1 / 30)
+        time.sleep(1 / 40)
         pygame.display.update()
 
-        need_redraw = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 return
-            elif event.type == pygame.VIDEORESIZE:
-                need_redraw = True
-
             elif event.type == pygame.KEYDOWN:
-                need_redraw = True
                 if event.key == pygame.K_a:
                     for graph in graphs:
                         graph.average = not graph.average
@@ -90,10 +85,8 @@ def main(args):
         if time.time() - last_refresh > args.rate:
             last_refresh = time.time()
             refresh(graphs)
-            need_redraw = True
 
-        if need_redraw:
-            redraw(surface, graphs, args)
+        redraw(surface, graphs, args)
 
 
 if __name__ == "__main__":

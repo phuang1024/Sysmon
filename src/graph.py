@@ -1,3 +1,5 @@
+import time
+
 import cv2
 import numpy as np
 import pygame
@@ -14,10 +16,12 @@ class Graph:
     n_lines = 0
     supports_avg = True
 
-    def __init__(self, length):
+    def __init__(self, length, refresh_rate: float):
         # Set this from outside.
         self.average = False
         self.length = length
+        self.refresh_rate = refresh_rate
+        self.last_update = time.time()
         self.data = np.zeros((self.n_lines, length), dtype=float)
 
     def update(self):
@@ -30,6 +34,8 @@ class Graph:
         self.data[:, -1] = data
 
         self.labels = labels
+
+        self.last_update = time.time()
 
     def draw_graph(self, width, height, args):
         image = np.zeros((height, width, 3), dtype=np.uint8)
@@ -59,9 +65,12 @@ class Graph:
 
         # Previous (x, y) point on image.
         prev = None
+        # X offset for smooth scrolling.
+        offset_x = -1 * (time.time()-self.last_update) / self.refresh_rate * dx
+        offset_x = int(offset_x)
         for i, value in enumerate(data):
             point = (
-                int(i*dx),
+                int(i*dx) + offset_x,
                 int(np.interp(value, (0, 1), (image.shape[0]-1, 0))),
             )
 
