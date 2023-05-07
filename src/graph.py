@@ -17,7 +17,9 @@ class Graph:
     supports_avg = True
 
     def __init__(self, length, refresh_rate: float):
-        # Set this from outside.
+        self.init()
+
+        # self.average is modified from outside.
         self.average = False
         self.length = length
         self.refresh_rate = refresh_rate
@@ -28,7 +30,13 @@ class Graph:
         """
         Call refresh and roll over data.
         """
-        data, labels = self.refresh()
+        try:
+            data, labels = self.refresh()
+        except Exception as e:
+            print(f"Error in refresh() {self.name}: {e}")
+            return
+
+        data = np.array(data)
 
         self.data = np.roll(self.data, -1, axis=1)
         self.data[:, -1] = data
@@ -46,10 +54,10 @@ class Graph:
             # Dim individual if average is set.
             if do_avg:
                 color = color * 0.3
-            self.draw_line(image, line, color)
+            self.draw_line(image, line, color, args)
         if do_avg:
             data = np.mean(self.data, axis=0)
-            self.draw_line(image, data, random_color(0))
+            self.draw_line(image, data, random_color(0), args)
 
         # Convert to pygame surface
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -57,17 +65,21 @@ class Graph:
 
         return image
 
-    def draw_line(self, image, data, color):
+    def draw_line(self, image, data, color, args):
         if len(data) <= 1:
             dx = 0
         else:
             dx = image.shape[1] / (len(data) - 1)
 
+        # X offset for smooth scrolling.
+        if args.scroll:
+            offset_x = -1 * (time.time()-self.last_update) / self.refresh_rate * dx
+            offset_x = int(offset_x)
+        else:
+            offset_x = 0
+
         # Previous (x, y) point on image.
         prev = None
-        # X offset for smooth scrolling.
-        offset_x = -1 * (time.time()-self.last_update) / self.refresh_rate * dx
-        offset_x = int(offset_x)
         for i, value in enumerate(data):
             point = (
                 int(i*dx) + offset_x,
@@ -101,3 +113,8 @@ class Graph:
         :return: (values, labels)
         """
         return ([], [])
+
+    def init(self):
+        """
+        Override this in the subclass.
+        """

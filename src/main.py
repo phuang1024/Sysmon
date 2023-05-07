@@ -6,10 +6,9 @@ os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "1"
 import pygame
 pygame.init()
 
-from cpu import Cpu
-from gpu import Gpu
-from memory import Memory
-from temp import Temperature
+from cpu import *
+from gpu import *
+from memory import *
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_FONT = os.path.join(ROOT, "assets", "ubuntu-condensed.ttf")
@@ -17,17 +16,23 @@ DEFAULT_FONT = os.path.join(ROOT, "assets", "ubuntu-condensed.ttf")
 FONT = None
 
 
+def foreach_graph(graphs):
+    for _, g in graphs:
+        for graph in g:
+            yield graph
+
+
 def refresh(graphs):
-    for graph in graphs:
+    for graph in foreach_graph(graphs):
         graph.update()
 
 
-def redraw(surface, graphs, args):
+def redraw(surface, graphs, tab, args):
     surface.fill((0, 0, 0))
 
     # Compute height
     total_graph_factors = len(graphs) + (len(graphs)+1) * args.margin
-    graph_height = surface.get_height() / total_graph_factors
+    graph_height = (surface.get_height()-20) / total_graph_factors
     margin = graph_height * args.margin
 
     # Compute width
@@ -38,7 +43,7 @@ def redraw(surface, graphs, args):
     label_x = 2*margin + graph_width
 
     y = margin
-    for graph in graphs:
+    for graph in graphs[tab][1]:
         # Graph
         img = graph.draw_graph(int(graph_width), int(graph_height), args)
         surface.blit(img, (margin, y))
@@ -50,24 +55,44 @@ def redraw(surface, graphs, args):
 
         y += graph_height + margin
 
+    # Draw tabs
+    tab_width = surface.get_width() / len(graphs)
+    tab_width = int(min(tab_width, 100))
+    for i in range(len(graphs)):
+        x = i * tab_width
+        color = (215, 215, 255) if i == tab else (190, 190, 190)
+        pygame.draw.rect(surface, color, (x, 0, tab_width, 20), 0, 3)
+        pygame.draw.rect(surface, (255, 255, 255), (x, 0, tab_width, 20), 1, 3)
+
+        text = FONT.render(graphs[i][0], True, (0, 0, 0))
+        text_x = x + (tab_width - text.get_width()) / 2
+        text_y = (20 - text.get_height()) / 2
+        surface.blit(text, (text_x, text_y))
+
 
 def main(args):
     length = int(args.time / args.rate)
 
-    # Create graph objects.
-    graphs = []
-    if args.cpu:
-        graphs.append(Cpu(length, args.rate))
-    if args.memory:
-        graphs.append(Memory(length, args.rate))
-    if args.temp:
-        graphs.append(Temperature(length, args.rate))
-    if args.gpu:
-        graphs.append(Gpu(length, args.rate))
+    graphs = (
+        ("CPU", (
+            CpuUtil(length, args.rate),
+            CpuTemp(length, args.rate),
+        )),
+        ("Memory", (
+            Memory(length, args.rate),
+            Cached(length, args.rate),
+            Swap(length, args.rate),
+        )),
+        ("GPU", (
+            GpuUtil(length, args.rate),
+            GpuTemp(length, args.rate),
+        )),
+    )
 
     surface = pygame.display.set_mode((1280, 720), pygame.RESIZABLE)
     pygame.display.set_caption("System Monitor")
 
+    tab = 0
     last_refresh = 0
     while True:
         time.sleep(1 / 40)
@@ -77,37 +102,32 @@ def main(args):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 return
+
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
-                    for graph in graphs:
+                    for graph in foreach_graph(graphs):
                         graph.average = not graph.average
+
+                elif pygame.K_1 <= event.key <= pygame.K_9:
+                    tab = event.key - pygame.K_1
+                    tab = min(tab, len(graphs)-1)
 
         if time.time() - last_refresh > args.rate:
             last_refresh = time.time()
             refresh(graphs)
 
-        redraw(surface, graphs, args)
+        redraw(surface, graphs, tab, args)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-
-    parser.add_argument("--cpu", action="store_true")
-    parser.add_argument("--no-cpu", dest="cpu", action="store_false")
-    parser.add_argument("--memory", action="store_true")
-    parser.add_argument("--no-memory", dest="memory", action="store_false")
-    parser.add_argument("--temp", action="store_true")
-    parser.add_argument("--no-temp", dest="temp", action="store_false")
-    parser.add_argument("--gpu", action="store_true")
-    parser.add_argument("--no-gpu", dest="gpu", action="store_false")
-    parser.set_defaults(cpu=True, memory=True, temp=True, gpu=False)
-
     parser.add_argument("-r", "--rate", type=float, default=0.4, help="Refresh rate.")
     parser.add_argument("-t", "--time", type=float, default=60, help="Graph X axis length.")
     parser.add_argument("--font", type=str, default=DEFAULT_FONT, help="Font to use for labels.")
     parser.add_argument("--font-size", type=int, default=17, help="Font size to use for labels.")
     parser.add_argument("--margin", type=float, default=0.2, help="Spacing between graphs as factor of graph height.")
     parser.add_argument("--labels", type=float, default=0.2, help="Space for labels as factor of graph width.")
+    parser.add_argument("--scroll", action="store_true", help="Smooth scrolling in time dimension.")
 
     args = parser.parse_args()
 
